@@ -4,9 +4,10 @@
             {{ __('Dashboard') }}
         </h2>
     </x-slot>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @include('flash-message')
+            <header calss="nSuma"></header>
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
                     You're logged in!</br>
@@ -14,7 +15,8 @@
                     
                     <a href="{{'edicio/'.Auth::user()->id}}">Editar Usuario</a>
                     <img src="{{Auth::user()->image}}">
-                    @include('flash-message')
+                    <a href="{{'admin/'.Auth::user()->id}}">Admin</a>
+
                 </div>
             </div>
         </div>

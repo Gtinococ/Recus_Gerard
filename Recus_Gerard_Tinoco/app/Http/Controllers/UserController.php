@@ -6,6 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
+use App\Models\Message;
+
+use App\Events\NewMessageNotification;
 
 class UserController extends Controller
 {
@@ -14,9 +19,39 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($id)
     {
-        //
+        $data["user_id"] = Auth::user()->id;
+
+        $user = User::find($id);
+
+        if($user->is_admin == 1){
+            return view('admin',$data);
+        }else{
+            return redirect()->to('dashboard');
+        }
+    }
+
+    public function send(Request $request)
+    {
+
+        $message = new Message;
+
+        $message->setAttribute('from', Auth::user()->id);
+
+        $message->setAttribute('to', $request->input("to"));
+
+        $message->setAttribute('message', $request->input("message"));
+
+        $message->save();
+
+        // want to broadcast NewMessageNotification event
+
+        event(new NewMessageNotification($message));
+
+        return "sms enviado...";
+
+        // ...
     }
 
     /**
@@ -77,7 +112,7 @@ class UserController extends Controller
             'name' => 'required|string',
             'lastname' => 'required|string',
             'email' => 'nullable|string|email|unique:users,email',
-            'password' => 'nullable|string',
+            'password' => 'required|string|min:8|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/',
             'pass_confirm' => 'same:password',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -96,6 +131,7 @@ class UserController extends Controller
 
         return redirect()->to('dashboard')->with('success','Campos editados correctamente!');
     }
+
 
     /**
      * Remove the specified resource from storage.
